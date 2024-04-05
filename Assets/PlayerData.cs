@@ -19,8 +19,8 @@ public class PlayerData : MonoBehaviour {
     float mana;
 
     private void Awake() {
-        hp = maxHp/2;
-        mana = maxMana/2;
+        hp = maxHp / 2;
+        mana = maxMana / 2;
     }
     private void Start() {
         OnHpChange?.Invoke(hp, maxHp);
@@ -51,14 +51,28 @@ public class PlayerData : MonoBehaviour {
     #endregion
 
     #region Stat Modifications
-    void ModifyHpRegen(float pValue) {
+    public void ModifyHpRegen(float pValue) {
         hpRegen = Mathf.Max(hpRegen + pValue, 0);
         OnHpRegenChange?.Invoke(hpRegen);
     }
 
-    void ModifyManaRegen(float pValue) {
+    public void ModifyManaRegen(float pValue) {
         manaRegen = Mathf.Max(manaRegen + pValue, 0);
         OnManaRegenChange?.Invoke(manaRegen);
+    }
+
+    public void ModifyHp(float pValue) {
+        hp += pValue;
+        hp = Mathf.Min(hp, maxHp);
+        hp = Math.Max(hp, 0);
+        OnHpChange?.Invoke(hp, maxHp);
+    }
+    #endregion
+
+    #region HP
+    public void TakeDamage(float pDamage) {
+        hp = Mathf.Max(hp - pDamage, 0);
+        OnHpChange?.Invoke(hp, maxHp);
     }
     #endregion
 

@@ -5,13 +5,9 @@ using UnityEngine;
 public class AbilityTest : AbilityBase {
 
     #region Ability
-    public override void UseAbility() {
-        //if (cooldownLeft>)
+    protected override void AbilityEffect() {
+        Debug.Log("test"); 
     }
     #endregion
 
-    //IEnumerator StartAbility() {
-    //    cooldownLeft = abilityCooldown;
-    //    onCooldownChange?.Invoke(cooldownLeft, abilityCooldown);
-    //}
 }

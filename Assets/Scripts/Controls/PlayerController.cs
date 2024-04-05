@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(IPathFinder))]
 public class PlayerController : MonoBehaviour {
 
+    [SerializeField] LayerMask targetLayerMask;
     [SerializeField] LayerMask uiMask;
     [SerializeField] Camera playerCamera;
 
@@ -27,7 +28,7 @@ public class PlayerController : MonoBehaviour {
 
         RaycastHit hit;
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit)) {
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, targetLayerMask)) {
             targetLocation = hit.point;
         }
     }
