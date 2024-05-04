@@ -9,6 +9,7 @@ public class AbilityUIData {
     public Image cooldownIndicator;
     public Image abilityImage;
     public Button abilityButton;
+    public TextMeshProUGUI levelText;
 }
 
 public class UIManager : MonoBehaviour {
@@ -49,6 +50,7 @@ public class UIManager : MonoBehaviour {
 
         abilityManager.OnAbilityCooldownDecrease += UpdateAbilityCooldownIcon;
         abilityManager.OnAbilityUseTimeChange += UpdateAbilityUseTime;
+        abilityManager.OnAbilityLevelUp += UpdateAbilityLevel;
     }
 
     void OnDisable() {
@@ -63,6 +65,7 @@ public class UIManager : MonoBehaviour {
 
         abilityManager.OnAbilityCooldownDecrease -= UpdateAbilityCooldownIcon;
         abilityManager.OnAbilityUseTimeChange -= UpdateAbilityUseTime;
+        abilityManager.OnAbilityLevelUp -= UpdateAbilityLevel;
     }
     #endregion
 
@@ -98,6 +101,9 @@ public class UIManager : MonoBehaviour {
         abilities[pAbilityIndex].cooldownIndicator.color = abilityInUseGradient.Evaluate(1f - pUseTimeLeft / pAbilityDuration);
         abilities[pAbilityIndex].cooldownIndicator.fillAmount = pUseTimeLeft / pAbilityDuration;
     }
-    #endregion
 
+    private void UpdateAbilityLevel(int pLevel, int pMaxLevel, int pAbilityIndex) {
+        abilities[pAbilityIndex].levelText.text = (pLevel + 1).ToString();
+    }
+    #endregion
 }
