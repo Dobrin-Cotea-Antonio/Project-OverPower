@@ -4,9 +4,10 @@ using UnityEngine;
 using System;
 
 public class AbilityManager : MonoBehaviour {
-    public Action<float, float, int> OnAbilityCooldownDecrease;
+    public Action<float, float,float,float,int,int, int> OnAbilityCooldownDecrease;
     public Action<float, float, int> OnAbilityUseTimeChange;
     public Action<int, int, int> OnAbilityLevelUp;
+    public Action<int, int, int> OnChargeChange;
 
     [SerializeField] PlayerData data;
     [SerializeField] List<AbilityBase> abilities;
@@ -17,6 +18,7 @@ public class AbilityManager : MonoBehaviour {
             ability.OnCooldownChange += AbilityCooldownDecrease;
             ability.OnUseTimeChange += AbilityUseTimeDecrease;
             ability.OnAbilityLevelUp += AbilityLevelUp;
+            ability.OnChargeChange += ChargeChange;
         }
     }
 
@@ -25,13 +27,14 @@ public class AbilityManager : MonoBehaviour {
             ability.OnCooldownChange -= AbilityCooldownDecrease;
             ability.OnUseTimeChange -= AbilityUseTimeDecrease;
             ability.OnAbilityLevelUp -= AbilityLevelUp;
+            ability.OnChargeChange -= ChargeChange;
         }
     }
     #endregion
 
     #region Ability Events
-    void AbilityCooldownDecrease(float pCooldownLeft, float pAbilityCooldown, AbilityBase pAbility) {
-        OnAbilityCooldownDecrease?.Invoke(pCooldownLeft, pAbilityCooldown, abilities.IndexOf(pAbility));
+    void AbilityCooldownDecrease(float pCooldownLeft, float pAbilityCooldown,float pAbilityChargeCooldownLeft,float pAbiliyChargeCooldownMax,int pCharges,int pMaxCharges, AbilityBase pAbility) {
+        OnAbilityCooldownDecrease?.Invoke(pCooldownLeft, pAbilityCooldown,pAbilityChargeCooldownLeft,pAbiliyChargeCooldownMax,pCharges,pMaxCharges, abilities.IndexOf(pAbility));
     }
 
     void AbilityUseTimeDecrease(float pUseTimeLeft, float pAbilityDuration, AbilityBase pAbility) {
@@ -40,6 +43,10 @@ public class AbilityManager : MonoBehaviour {
 
     void AbilityLevelUp(AbilityBase pAbility, int pLevel, int pMaxLevel) {
         OnAbilityLevelUp?.Invoke(pLevel, pMaxLevel, abilities.IndexOf(pAbility));
+    }
+
+    void ChargeChange(int pCharges, int pMaxCharges, AbilityBase pAbility) {
+        OnChargeChange?.Invoke(pCharges, pMaxCharges, abilities.IndexOf(pAbility));
     }
     #endregion
 
@@ -80,7 +87,11 @@ public class AbilityManager : MonoBehaviour {
     #endregion
 
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.A))
+            abilities[0].LevelUp();
+        if (Input.GetKeyDown(KeyCode.S))
             abilities[1].LevelUp();
+        if (Input.GetKeyDown(KeyCode.D))
+            abilities[2].LevelUp();
     }
 }

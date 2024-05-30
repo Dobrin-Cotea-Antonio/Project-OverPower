@@ -10,6 +10,7 @@ public class AbilityUIData {
     public Image abilityImage;
     public Button abilityButton;
     public TextMeshProUGUI levelText;
+    public TextMeshProUGUI chargeText;
 }
 
 public class UIManager : MonoBehaviour {
@@ -31,6 +32,7 @@ public class UIManager : MonoBehaviour {
     [SerializeField] List<AbilityUIData> abilities;
     [SerializeField] Gradient abilityOnCooldownGradient;
     [SerializeField] Gradient abilityInUseGradient;
+    [SerializeField] Color abilityChargeCooldownColor;
 
     private void Awake() {
         for (int i = 0; i < abilities.Count; i++)
@@ -51,6 +53,7 @@ public class UIManager : MonoBehaviour {
         abilityManager.OnAbilityCooldownDecrease += UpdateAbilityCooldownIcon;
         abilityManager.OnAbilityUseTimeChange += UpdateAbilityUseTime;
         abilityManager.OnAbilityLevelUp += UpdateAbilityLevel;
+        abilityManager.OnChargeChange += UpdateAbilityCharges;
     }
 
     void OnDisable() {
@@ -66,6 +69,7 @@ public class UIManager : MonoBehaviour {
         abilityManager.OnAbilityCooldownDecrease -= UpdateAbilityCooldownIcon;
         abilityManager.OnAbilityUseTimeChange -= UpdateAbilityUseTime;
         abilityManager.OnAbilityLevelUp -= UpdateAbilityLevel;
+        abilityManager.OnChargeChange -= UpdateAbilityCharges;
     }
     #endregion
 
@@ -92,9 +96,30 @@ public class UIManager : MonoBehaviour {
     #endregion
 
     #region Abilities
-    private void UpdateAbilityCooldownIcon(float pCooldownLeft, float pAbilityCooldown, int pAbilityIndex) {
-        abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pCooldownLeft / pAbilityCooldown);
-        abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
+    private void UpdateAbilityCooldownIcon(float pCooldownLeft, float pAbilityCooldown, float pAbilityChargeCooldownLeft, float pAbiliyChargeCooldownMax, int pCharges, int pMaxCharges, int pAbilityIndex) {
+
+        if (pMaxCharges == 1) {
+            abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pCooldownLeft / pAbilityCooldown);
+            abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
+            return;
+        }
+
+        if (pCharges == 0) {//|| pAbilityChargeCooldownLeft <= 0
+            abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pCooldownLeft / pAbilityCooldown);
+            abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
+            return;
+        }
+
+        if (pAbilityChargeCooldownLeft > 0) {
+            Debug.Log("test1");
+            abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pAbilityChargeCooldownLeft / pAbiliyChargeCooldownMax);
+            abilities[pAbilityIndex].cooldownIndicator.fillAmount = pAbilityChargeCooldownLeft / pAbiliyChargeCooldownMax;
+        } else {
+            Debug.Log("test2");
+            abilities[pAbilityIndex].cooldownIndicator.color = abilityChargeCooldownColor;
+            abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
+        }
+
     }
 
     private void UpdateAbilityUseTime(float pUseTimeLeft, float pAbilityDuration, int pAbilityIndex) {
@@ -104,6 +129,13 @@ public class UIManager : MonoBehaviour {
 
     private void UpdateAbilityLevel(int pLevel, int pMaxLevel, int pAbilityIndex) {
         abilities[pAbilityIndex].levelText.text = (pLevel + 1).ToString();
+    }
+
+    private void UpdateAbilityCharges(int pCharges,int pMaxCharges,int pAbilityIndex) {
+        if (pMaxCharges==1)
+            abilities[pAbilityIndex].chargeText.text = "";
+        else
+            abilities[pAbilityIndex].chargeText.text = (pCharges.ToString());
     }
     #endregion
 }

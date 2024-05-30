@@ -4,9 +4,10 @@ using UnityEngine;
 using System;
 
 abstract public class AbilityBase : MonoBehaviour {
-
-    public Action<float, float, AbilityBase> OnCooldownChange;//updating ui and maybe more in the future
-    public Action<float, float, AbilityBase> OnUseTimeChange;//updating ui and maybe more in the future
+    //cooldown,maxcooldown,charge cooldown left,max charge cooldown,charges,maxCharges,current ability
+    public Action<float, float, float, float, int, int, AbilityBase> OnCooldownChange;//updating ui and maybe more in the future (displays the cooldown of the ability)
+    public Action<float, float, AbilityBase> OnUseTimeChange;//updating ui and maybe more in the future (displays how long the ability is in use for)
+    public Action<int, int, AbilityBase> OnChargeChange;//updating ui and maybe more in the future (displays how many charges the ability has)
     public Action<AbilityBase, int, int> OnAbilityLevelUp;//used for communicating with the ui once the ability is upgraded
     public Action<GameObject> OnAbilityImpact;
 
@@ -16,7 +17,12 @@ abstract public class AbilityBase : MonoBehaviour {
     [SerializeField] protected float[] abilityDuration;
     [SerializeField] protected float[] abilityRange;
     [SerializeField] protected string[] description;
+
+    [Header("Charges")]
     [SerializeField] protected int[] maxCharges;
+    [SerializeField] protected float[] chargeCooldown;
+
+    [Header("Additional Info")]
     [SerializeField] protected bool[] blocksAbilities;//if false other abilities can be used while this one is active (Jax W)
     [SerializeField] protected bool[] moveToTarget;//if enabled the target will move towards the target if its outside of its range
     [SerializeField] protected int maxLevel;
@@ -29,20 +35,21 @@ abstract public class AbilityBase : MonoBehaviour {
     public int charges { get; protected set; }
     public float cooldownLeft { get; protected set; }
     public float useTimeLeft { get; protected set; }
+    public float chargeCooldownLeft { get; protected set; }
     public Sprite iconImage { get { return _iconImage; } }
 
     protected NavMeshPathfinder pathfinder;
     protected PlayerController playerController;
 
     protected virtual void Awake() {
-        level = -1;
-        LevelUp();
+        level = 0;
         charges = maxCharges[level];
         pathfinder = GetComponent<NavMeshPathfinder>();
         playerController = GetComponent<PlayerController>();
     }
 
     protected virtual void Update() {
+        DecreaseChargeCooldownLeft();
         DecreaseCooldown();
         DecreaseUseTimeLeft();
     }
@@ -60,7 +67,20 @@ abstract public class AbilityBase : MonoBehaviour {
             return;
 
         cooldownLeft = Mathf.Max(cooldownLeft - Time.deltaTime, 0);
-        OnCooldownChange?.Invoke(cooldownLeft, abilityCooldown[level], this);
+
+        if (cooldownLeft == 0) {
+            if (charges <= maxCharges[level]) {
+                charges++;
+
+                if (charges != maxCharges[level]) {
+                    cooldownLeft = abilityCooldown[level];
+                }
+
+                OnChargeChange?.Invoke(charges, maxCharges[level], this);
+            }
+        }
+
+        OnCooldownChange?.Invoke(cooldownLeft, abilityCooldown[level], chargeCooldownLeft, chargeCooldown[level], charges, maxCharges[level], this);
     }
 
     protected void DecreaseUseTimeLeft() {
@@ -70,15 +90,31 @@ abstract public class AbilityBase : MonoBehaviour {
         useTimeLeft = Mathf.Max(useTimeLeft - Time.deltaTime, 0);
         OnUseTimeChange?.Invoke(useTimeLeft, abilityDuration[level], this);
 
-        if (useTimeLeft == 0)
-            cooldownLeft = abilityCooldown[level];
+        if (useTimeLeft == 0) {
+            cooldownLeft = abilityCooldown[level] - abilityDuration[level];
+            if (maxCharges[level] != 1)
+                chargeCooldownLeft = chargeCooldown[level] - abilityDuration[level];
+        }
+    }
+
+    protected void DecreaseChargeCooldownLeft() {
+        if (chargeCooldownLeft == 0 || maxCharges[level] == 1 || charges == maxCharges[level])
+            return;
+
+        chargeCooldownLeft = Mathf.Max(chargeCooldownLeft - Time.deltaTime, 0);
     }
     #endregion
 
     #region Ability
     public void UseAbility() {
-        if (useTimeLeft != 0 || cooldownLeft != 0)
-            return;
+
+        if (maxCharges[level] == 1) {
+            if (useTimeLeft != 0 || cooldownLeft != 0)
+                return;
+        } else {
+            if (useTimeLeft != 0 || chargeCooldownLeft != 0 || charges == 0)
+                return;
+        }
 
         pathfinder.ClearCommand();
 
@@ -93,8 +129,21 @@ abstract public class AbilityBase : MonoBehaviour {
     }
 
     protected void SetAbilityCooldown() {
+        if (maxCharges[level] != 1) {
+            charges = Mathf.Max(charges - 1, 0);
+            OnChargeChange?.Invoke(charges, maxCharges[level], this);
+            //return;
+        }
+
+        //if (abilityDuration[level] != 0) {
+        //    useTimeLeft = abilityDuration[level];
+        //    return;
+        //}
+
         if (abilityDuration[level] == 0) {
             cooldownLeft = abilityCooldown[level];
+            if (maxCharges[level] != 1)
+                chargeCooldownLeft = chargeCooldown[level];
         } else {
             //isActive = true;
             useTimeLeft = abilityDuration[level];
@@ -108,9 +157,6 @@ abstract public class AbilityBase : MonoBehaviour {
 
     protected void OnImpact(GameObject pGameObject) {
         OnAbilityImpact?.Invoke(pGameObject);
-    }
-    protected void UpdateCharges(int pAmount) {
-
     }
     #endregion
 
@@ -137,8 +183,21 @@ abstract public class AbilityBase : MonoBehaviour {
 
     #region Level
     public void LevelUp() {
+        int lastLevel = level;
+
         level = Mathf.Min(level + 1, maxLevel - 1);
+
+        Debug.Log("test");
+
+        if (level == lastLevel)
+            return;
+
+        if (charges != maxCharges[level]) {
+            cooldownLeft = abilityCooldown[level];
+        }
+
         OnAbilityLevelUp?.Invoke(this, level, maxLevel);
+        OnChargeChange?.Invoke(charges, maxCharges[level], this);
     }
     #endregion
 }
