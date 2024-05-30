@@ -132,20 +132,20 @@ abstract public class AbilityBase : MonoBehaviour {
         if (maxCharges[level] != 1) {
             charges = Mathf.Max(charges - 1, 0);
             OnChargeChange?.Invoke(charges, maxCharges[level], this);
-            //return;
-        }
 
-        //if (abilityDuration[level] != 0) {
-        //    useTimeLeft = abilityDuration[level];
-        //    return;
-        //}
+            if (charges != 0) {
+                cooldownLeft = abilityCooldown[level];
+            }
+
+            chargeCooldownLeft = chargeCooldown[level];
+            return;
+        }
 
         if (abilityDuration[level] == 0) {
             cooldownLeft = abilityCooldown[level];
             if (maxCharges[level] != 1)
                 chargeCooldownLeft = chargeCooldown[level];
         } else {
-            //isActive = true;
             useTimeLeft = abilityDuration[level];
         }
     }

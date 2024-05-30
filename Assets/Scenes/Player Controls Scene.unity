@@ -2026,7 +2026,7 @@ MonoBehaviour:
   maxCharges: 0100000002000000
   chargeCooldown:
   - 0
-  - 2
+  - 1
   blocksAbilities: 0000
   moveToTarget: 0000
   maxLevel: 2
