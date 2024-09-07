@@ -15,6 +15,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "PlayerLeftClick",
+                    "type": "Button",
+                    "id": "04d42761-d491-4e2a-9ab0-e475351da0bd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "MoveCamera",
                     "type": "Value",
                     "id": "43212331-9396-443e-b9e0-eed99ddd1216",
@@ -81,6 +90,15 @@
                     "name": "CenterCameraOnPlayer",
                     "type": "Button",
                     "id": "17c655f4-0602-45b2-852f-8dee3f099e8d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "f2443233-c418-44d5-a4dd-c77cd3ebd6c4",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -228,6 +246,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Ability4Press",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "74a29ab7-b1d1-4879-93cb-3957eaa3354a",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PlayerLeftClick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

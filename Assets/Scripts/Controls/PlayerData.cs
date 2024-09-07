@@ -14,19 +14,25 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     public Action<StatusEffect> OnStatusCreate;
     public Action<StatusEffect> OnStatusRemove;
 
+    [Header("Data")]
+    [SerializeField] private UIManager _UIManager;
+    public UIManager UIManager { get { return _UIManager; } }
+
     [Header("Stats")]
-    [SerializeField] float maxHp;
-    [SerializeField] float maxMana;
-    [SerializeField] float hpRegen;
-    [SerializeField] float manaRegen;
-    [SerializeField] float baseSpeed;
+    [SerializeField] private float maxHp;
+    [SerializeField] private float maxMana;
+    [SerializeField] private float hpRegen;
+    [SerializeField] private float manaRegen;
+    [SerializeField] private float baseSpeed;
 
     [Header("Team")]
-    [SerializeField] Team _team;
+    [SerializeField] private Team _team;
+    [SerializeField] private bool _isDummy = false;
 
-    List<StatusEffect> statusEffects = new List<StatusEffect>();
+    private List<StatusEffect> statusEffects = new List<StatusEffect>();
 
     public Team team { get { return _team; } }
+    public bool isDummy { get { return _isDummy; } }
 
     public float hp { get; private set; }
     public float mana { get; private set; }
@@ -36,7 +42,7 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     private void Awake() {
         hp = maxHp / 2;
         mana = maxMana / 2;
-        speed = baseSpeed;  
+        speed = baseSpeed;
     }
     private void Start() {
         OnHpChange?.Invoke(hp, maxHp);
@@ -143,10 +149,10 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
             return false;
         }
 
-        foreach (StatusEffect status in statusEffects) 
-            if (status is T) 
+        foreach (StatusEffect status in statusEffects)
+            if (status is T)
                 return true;
-        
+
         return false;
     }
 
@@ -163,5 +169,4 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
         return -1;
     }
     #endregion
-
 }

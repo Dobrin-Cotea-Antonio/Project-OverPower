@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using AYellowpaper.SerializedCollections;
 
 [System.Serializable]
 public class AbilityUIData {
@@ -15,32 +16,51 @@ public class AbilityUIData {
 
 public class UIManager : MonoBehaviour {
 
-    [SerializeField] PlayerData playerData;
+    [SerializeField] private PlayerData playerData;
+
+    [Header("Bottom Bar Background")]
+    [SerializeField] private Image background;
 
     [Header("Hp Bar Data")]
-    [SerializeField] TextMeshProUGUI hpText;
-    [SerializeField] TextMeshProUGUI hpRegenText;
-    [SerializeField] RectTransform hpBarTransform;
+    [SerializeField] private TextMeshProUGUI hpText;
+    [SerializeField] private TextMeshProUGUI hpRegenText;
+    [SerializeField] private RectTransform hpBarTransform;
 
     [Header("Mana Bar Data")]
-    [SerializeField] TextMeshProUGUI manaText;
-    [SerializeField] TextMeshProUGUI manaRegenText;
-    [SerializeField] RectTransform manaBarTransform;
+    [SerializeField] private TextMeshProUGUI manaText;
+    [SerializeField] private TextMeshProUGUI manaRegenText;
+    [SerializeField] private RectTransform manaBarTransform;
 
     [Header("Abilities")]
-    [SerializeField] AbilityManager abilityManager;
-    [SerializeField] List<AbilityUIData> abilities;
-    [SerializeField] Gradient abilityOnCooldownGradient;
-    [SerializeField] Gradient abilityInUseGradient;
-    [SerializeField] Color abilityChargeCooldownColor;
+    [SerializeField] private AbilityManager abilityManager;
+    [SerializeField] private List<AbilityUIData> abilities;
+    [SerializeField] private Gradient abilityOnCooldownGradient;
+    [SerializeField] private Gradient abilityInUseGradient;
+    [SerializeField] private Color abilityChargeCooldownColor;
 
+    [Header("Capture UI")]
+    [SerializeField] private GameObject captureUIHolder;
+    [SerializeField] private List<MapArea> mapAreas;
+    [SerializeField] private SerializedDictionary<Team, Image> teamCaptureBar;
+
+    #region Unity Events
     private void Awake() {
         for (int i = 0; i < abilities.Count; i++)
             abilities[i].abilityImage.sprite = abilityManager.ReturnAbilityIconByIndex(i);
     }
 
-    #region Events
-    void OnEnable() {
+    private void Start() {
+        //Debug.Log(ZoneReusableData.instance);
+        background.color = ZoneReusableData.instance.teamZoneColor[playerData.team];
+
+        UpdateImageSize(teamCaptureBar[Team.Red], new Vector3(0, 1, 1));
+        UpdateImageSize(teamCaptureBar[Team.Green], new Vector3(0, 1, 1));
+        UpdateImageSize(teamCaptureBar[Team.Blue], new Vector3(0, 1, 1));
+
+        EnableCaptureBars(false);
+    }
+
+    private void OnEnable() {
         playerData.OnHpChange += UpdateHpBar;
         playerData.OnHpRegenChange += UpdateHpRegen;
         playerData.OnManaChange += UpdateManaBar;
@@ -54,9 +74,12 @@ public class UIManager : MonoBehaviour {
         abilityManager.OnAbilityUseTimeChange += UpdateAbilityUseTime;
         abilityManager.OnAbilityLevelUp += UpdateAbilityLevel;
         abilityManager.OnChargeChange += UpdateAbilityCharges;
+
+        foreach (MapArea area in mapAreas)
+            area.OnZoneValueChange += UpdateCaptureBar;
     }
 
-    void OnDisable() {
+    private void OnDisable() {
         playerData.OnHpChange -= UpdateHpBar;
         playerData.OnHpRegenChange -= UpdateHpRegen;
         playerData.OnManaChange -= UpdateManaBar;
@@ -70,27 +93,30 @@ public class UIManager : MonoBehaviour {
         abilityManager.OnAbilityUseTimeChange -= UpdateAbilityUseTime;
         abilityManager.OnAbilityLevelUp -= UpdateAbilityLevel;
         abilityManager.OnChargeChange -= UpdateAbilityCharges;
+
+        foreach (MapArea area in mapAreas)
+            area.OnZoneValueChange -= UpdateCaptureBar;
     }
     #endregion
 
     #region Hp Bar
-    void UpdateHpBar(float pHp, float pMaxHp) {
+    private void UpdateHpBar(float pHp, float pMaxHp) {
         hpText.text = string.Format("{0} / {1}", (int)pHp, (int)pMaxHp);
         hpBarTransform.localScale = new Vector3(pHp / pMaxHp, 1, 1);
     }
 
-    void UpdateHpRegen(float pValue) {
+    private void UpdateHpRegen(float pValue) {
         hpRegenText.text = string.Format("+{0}", pValue.ToString("F1"));
     }
     #endregion
 
     #region Mana Bar
-    void UpdateManaBar(float pMana, float pMaxMana) {
+    private void UpdateManaBar(float pMana, float pMaxMana) {
         manaText.text = string.Format("{0} / {1}", (int)pMana, (int)pMaxMana);
         manaBarTransform.localScale = new Vector3(pMana / pMaxMana, 1, 1);
     }
 
-    void UpdateManaRegen(float pValue) {
+    private void UpdateManaRegen(float pValue) {
         manaRegenText.text = string.Format("+{0}", pValue.ToString("F1"));
     }
     #endregion
@@ -131,11 +157,28 @@ public class UIManager : MonoBehaviour {
         abilities[pAbilityIndex].levelText.text = (pLevel + 1).ToString();
     }
 
-    private void UpdateAbilityCharges(int pCharges,int pMaxCharges,int pAbilityIndex) {
-        if (pMaxCharges==1)
+    private void UpdateAbilityCharges(int pCharges, int pMaxCharges, int pAbilityIndex) {
+        if (pMaxCharges == 1)
             abilities[pAbilityIndex].chargeText.text = "";
         else
             abilities[pAbilityIndex].chargeText.text = (pCharges.ToString());
+    }
+    #endregion
+
+    #region Capture Bars
+    public void EnableCaptureBars(bool pState) {
+        captureUIHolder.SetActive(pState);
+    }
+
+    void UpdateCaptureBar(List<PlayerData> pData, Team pTeam, float pCaptureValue, float pMaxValue) {
+        //Debug.Log("test");
+
+        Vector3 size = new Vector3(Mathf.Clamp(pCaptureValue / pMaxValue, 0, 1), 1, 1);
+        UpdateImageSize(teamCaptureBar[pTeam], size);
+    }
+
+    private void UpdateImageSize(Image pImage, Vector3 pSize) {
+        pImage.rectTransform.localScale = pSize;
     }
     #endregion
 }

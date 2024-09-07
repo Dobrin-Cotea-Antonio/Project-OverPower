@@ -6,12 +6,12 @@ public class PlayerMapAreas : MonoBehaviour
     public Color playerColor;
     [HideInInspector] public bool objBuff = false;
     
-    public enum Team
-    {
-        Red,
-        Blue,
-        Green
-    }
+    //public enum Team
+    //{
+    //    Red,
+    //    Blue,
+    //    Green
+    //}
 
     public Team team;
 

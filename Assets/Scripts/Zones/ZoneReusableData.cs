@@ -6,22 +6,26 @@ using AYellowpaper.SerializedCollections;
 public enum Team {
     Red,
     Green,
-    Blue
+    Blue,
+    Neutral
 }
 
 public class ZoneReusableData : MonoBehaviour {
 
-    public ZoneReusableData instance { get; private set; }
+    public static ZoneReusableData instance { get; private set; }
 
-    [SerializeField] SerializedDictionary<Team, Material> teamColor;
+    public SerializedDictionary<Team, Material> teamZoneMaterial = new SerializedDictionary<Team, Material>();
+    public SerializedDictionary<Team, Color> teamZoneColor = new SerializedDictionary<Team, Color>();
 
+    #region Unity Events
     private void Awake() {
         if (instance != null) {
             Destroy(this.gameObject);
-        }
-        else{
+        } else {
             instance = this;
+            //Debug.Log(instance);
             DontDestroyOnLoad(this.gameObject);
         }
     }
+    #endregion
 }
