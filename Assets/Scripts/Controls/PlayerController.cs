@@ -1,30 +1,53 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(IPathFinder))]
 public class PlayerController : MonoBehaviour {
 
-    [SerializeField] LayerMask targetLayerMask;
-    [SerializeField] LayerMask uiMask;
-    [SerializeField] Camera playerCamera;
+    [SerializeField] private LayerMask targetLayerMask;
+    [SerializeField] private LayerMask uiMask;
+    [SerializeField] private Camera playerCamera;
 
-    IPathFinder pathfinder;
-    PlayerData data;
+    [Header("Data")]
+    [SerializeField] private float playerMovementSpeed;
 
-    Vector3 targetWalkLocation;
-    Vector3 targetClickLocation;
-    float distanceDeadzone;
+    private IPathFinder pathfinder;
+    private PlayerData data;
 
+    private Vector3 targetWalkLocation;
+    private Vector3 targetClickLocation;
+    private float distanceDeadzone;
+
+    private Rigidbody rb;
+
+    private Vector3 right;
+    private Vector3 forward;
+    private Vector3 moveDirection;
+
+    #region Unity Events
     private void Start() {
         data = GetComponent<PlayerData>();
         pathfinder = GetComponent<IPathFinder>();
         targetWalkLocation = transform.localPosition;
+        rb = GetComponent<Rigidbody>();
+        FindAbsoluteDirections();
     }
+
+    private void Update() {
+        rb.velocity = moveDirection;
+    }
+    #endregion
 
     #region Events
     void OnPlayerMoveCommand() {
-        MoveTowardsPoint(true);
+        //MoveTowardsPoint(true);
+    }
+
+    void OnMovePlayer(InputValue pInputValue) {
+        Vector2 direction = pInputValue.Get<Vector2>() * playerMovementSpeed;
+        moveDirection = direction.y * forward + direction.x * right;
     }
     #endregion
 
@@ -62,8 +85,12 @@ public class PlayerController : MonoBehaviour {
     #endregion
 
     #region Helper Methods
-    public Vector3 ReturnTargetClickLocation() {
-        return targetClickLocation;
+    void FindAbsoluteDirections() {
+        Quaternion cameraRotation = transform.rotation;
+        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+        right = transform.right;
+        forward = transform.forward;
+        transform.rotation = cameraRotation;
     }
     #endregion
 }

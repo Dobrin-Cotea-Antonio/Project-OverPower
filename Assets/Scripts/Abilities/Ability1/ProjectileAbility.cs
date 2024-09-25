@@ -16,13 +16,11 @@ public class ProjectileAbility : AbilityBase {
     #region Ability
     protected override void AbilityEffect() {
         base.AbilityEffect();
-        Vector3 targetLocation = RaycastForTarget();
+
+        Vector3 targetLocation = RaycastForTarget(true);
 
         if (targetLocation == Vector3.zero)
             return;
-
-        //will have to rotate the player towards where the players clicks and casts the ability for now it will just shoot 
-        //in that direction
 
         targetLocation.y = spawnPosition.position.y;
 
@@ -33,7 +31,7 @@ public class ProjectileAbility : AbilityBase {
         projectile.SetDamage(damage);
         projectile.SetExplosionSize(explosionSize);
         projectile.SetRange(abilityRange[level]);
-        projectile.SetSpeed(projectileSpeed,forward);
+        projectile.SetSpeed(projectileSpeed, forward);
         projectile.SetOwnerCollider(ownerCollider);
         projectile.SetExtraDamageFromBurning(extraDamageToBurningTargets);
         projectile.OnImpact += OnImpact;

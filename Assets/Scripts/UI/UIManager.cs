@@ -43,6 +43,9 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private List<MapArea> mapAreas;
     [SerializeField] private SerializedDictionary<Team, Image> teamCaptureBar;
 
+    [Header("Gold")]
+    [SerializeField] private TextMeshProUGUI goldText;
+
     #region Unity Events
     private void Awake() {
         for (int i = 0; i < abilities.Count; i++)
@@ -50,7 +53,6 @@ public class UIManager : MonoBehaviour {
     }
 
     private void Start() {
-        //Debug.Log(ZoneReusableData.instance);
         background.color = ZoneReusableData.instance.teamZoneColor[playerData.team];
 
         UpdateImageSize(teamCaptureBar[Team.Red], new Vector3(0, 1, 1));
@@ -65,6 +67,8 @@ public class UIManager : MonoBehaviour {
         playerData.OnHpRegenChange += UpdateHpRegen;
         playerData.OnManaChange += UpdateManaBar;
         playerData.OnManaRegenChange += UpdateManaRegen;
+
+        playerData.OnGoldChange += UpdateGold;
 
         abilities[0].abilityButton.onClick.AddListener(abilityManager.OnAbility1Press);
         abilities[1].abilityButton.onClick.AddListener(abilityManager.OnAbility2Press);
@@ -84,6 +88,8 @@ public class UIManager : MonoBehaviour {
         playerData.OnHpRegenChange -= UpdateHpRegen;
         playerData.OnManaChange -= UpdateManaBar;
         playerData.OnManaRegenChange -= UpdateManaRegen;
+
+        playerData.OnGoldChange -= UpdateGold;
 
         abilities[0].abilityButton.onClick.RemoveListener(abilityManager.OnAbility1Press);
         abilities[1].abilityButton.onClick.RemoveListener(abilityManager.OnAbility2Press);
@@ -123,25 +129,22 @@ public class UIManager : MonoBehaviour {
 
     #region Abilities
     private void UpdateAbilityCooldownIcon(float pCooldownLeft, float pAbilityCooldown, float pAbilityChargeCooldownLeft, float pAbiliyChargeCooldownMax, int pCharges, int pMaxCharges, int pAbilityIndex) {
-
         if (pMaxCharges == 1) {
             abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pCooldownLeft / pAbilityCooldown);
             abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
             return;
         }
 
-        if (pCharges == 0) {//|| pAbilityChargeCooldownLeft <= 0
+        if (pCharges == 0) {
             abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pCooldownLeft / pAbilityCooldown);
             abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
             return;
         }
 
         if (pAbilityChargeCooldownLeft > 0) {
-            Debug.Log("test1");
             abilities[pAbilityIndex].cooldownIndicator.color = abilityOnCooldownGradient.Evaluate(1f - pAbilityChargeCooldownLeft / pAbiliyChargeCooldownMax);
             abilities[pAbilityIndex].cooldownIndicator.fillAmount = pAbilityChargeCooldownLeft / pAbiliyChargeCooldownMax;
         } else {
-            Debug.Log("test2");
             abilities[pAbilityIndex].cooldownIndicator.color = abilityChargeCooldownColor;
             abilities[pAbilityIndex].cooldownIndicator.fillAmount = pCooldownLeft / pAbilityCooldown;
         }
@@ -179,6 +182,12 @@ public class UIManager : MonoBehaviour {
 
     private void UpdateImageSize(Image pImage, Vector3 pSize) {
         pImage.rectTransform.localScale = pSize;
+    }
+    #endregion
+
+    #region Gold
+    private void UpdateGold(float pGold) {
+        goldText.text = ((int)pGold).ToString();
     }
     #endregion
 }

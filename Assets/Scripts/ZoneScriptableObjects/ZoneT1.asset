@@ -17,3 +17,4 @@ MonoBehaviour:
   captureDecayAutomatic: 10
   captureDecayUnderEnemy: 10
   captureRegainSpeed: 10
+  goldPerSecond: 50

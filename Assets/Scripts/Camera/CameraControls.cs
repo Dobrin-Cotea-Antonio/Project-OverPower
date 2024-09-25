@@ -104,12 +104,15 @@ public class CameraControls : MonoBehaviour {
 
     void ClampCameraZoom() {
         float distance = ReturnDistanceToGround();
+
         if (distance == 0)
             return;
+
         if (distance < minZoomDistance) {
             transform.Translate(0, 0, distance - minZoomDistance, Space.Self);
             return;
         }
+
         if (distance > maxZoomDistance) {
             transform.Translate(0, 0, distance - maxZoomDistance, Space.Self);
             return;

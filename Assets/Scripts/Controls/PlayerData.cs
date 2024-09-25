@@ -14,6 +14,8 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     public Action<StatusEffect> OnStatusCreate;
     public Action<StatusEffect> OnStatusRemove;
 
+    public Action<float> OnGoldChange;
+
     [Header("Data")]
     [SerializeField] private UIManager _UIManager;
     public UIManager UIManager { get { return _UIManager; } }
@@ -29,6 +31,10 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     [SerializeField] private Team _team;
     [SerializeField] private bool _isDummy = false;
 
+    [Header("")]
+    [SerializeField] private float _gold;
+
+
     private List<StatusEffect> statusEffects = new List<StatusEffect>();
 
     public Team team { get { return _team; } }
@@ -38,6 +44,8 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     public float mana { get; private set; }
     public float speed { get; private set; }
     public bool isStunned { get; set; }
+
+    public float gold { get; private set; }
 
     private void Awake() {
         hp = maxHp / 2;
@@ -49,6 +57,7 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
         OnManaChange?.Invoke(mana, maxMana);
         OnHpRegenChange?.Invoke(hpRegen);
         OnManaRegenChange?.Invoke(manaRegen);
+        OnGoldChange?.Invoke(gold);
     }
 
     private void Update() {
@@ -92,8 +101,6 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
 
     public void ModifySpeedByPercentage(float pValue) {
         speed = Mathf.Max(0, speed + (pValue / 100f) * baseSpeed);
-        //Debug.Log(speed);
-        //add event?
     }
     #endregion
 
@@ -104,7 +111,7 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     }
     #endregion
 
-    #region StatusEffects
+    #region Status Effects
     public void ApplyStatusEffect(GameObject pStatusEffectPrefab) {
 
         StatusEffect status = Instantiate(pStatusEffectPrefab, transform).GetComponent<StatusEffect>();
@@ -167,6 +174,13 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
                 return status.ReturnStackCount();
 
         return -1;
+    }
+    #endregion
+
+    #region Gold
+    public void AddGold(float pAmount) {
+        gold = Mathf.Max(gold + pAmount, 0);
+        OnGoldChange?.Invoke(gold);
     }
     #endregion
 }

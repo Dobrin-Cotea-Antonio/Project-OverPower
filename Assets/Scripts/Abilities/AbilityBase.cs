@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+[RequireComponent(typeof(PlayerData))]
 abstract public class AbilityBase : MonoBehaviour {
     //cooldown,maxcooldown,charge cooldown left,max charge cooldown,charges,maxCharges,current ability
     public Action<float, float, float, float, int, int, AbilityBase> OnCooldownChange;//updating ui and maybe more in the future (displays the cooldown of the ability)
@@ -23,8 +24,6 @@ abstract public class AbilityBase : MonoBehaviour {
     [SerializeField] protected float[] chargeCooldown;
 
     [Header("Additional Info")]
-    [SerializeField] protected bool[] blocksAbilities;//if false other abilities can be used while this one is active (Jax W)
-    [SerializeField] protected bool[] moveToTarget;//if enabled the target will move towards the target if its outside of its range
     [SerializeField] protected int maxLevel;
 
     [Header("Ability Raycasting Data")]
@@ -38,13 +37,11 @@ abstract public class AbilityBase : MonoBehaviour {
     public float chargeCooldownLeft { get; protected set; }
     public Sprite iconImage { get { return _iconImage; } }
 
-    protected NavMeshPathfinder pathfinder;
     protected PlayerController playerController;
 
     protected virtual void Awake() {
         level = 0;
         charges = maxCharges[level];
-        pathfinder = GetComponent<NavMeshPathfinder>();
         playerController = GetComponent<PlayerController>();
     }
 
@@ -52,13 +49,6 @@ abstract public class AbilityBase : MonoBehaviour {
         DecreaseChargeCooldownLeft();
         DecreaseCooldown();
         DecreaseUseTimeLeft();
-    }
-
-    bool BlockAbilities() {
-        //if (blocksAbilities[level] == false)
-        //    return false;
-        //return isActive;
-        return false;
     }
 
     #region Cooldown
@@ -116,16 +106,8 @@ abstract public class AbilityBase : MonoBehaviour {
                 return;
         }
 
-        pathfinder.ClearCommand();
-
-        if (moveToTarget[level]) {
-            playerController.AbilityMoveCommand(abilityRange[level]);
-            pathfinder.OnDeadzoneMoveEnd += SetAbilityCooldown;
-            pathfinder.OnDeadzoneMoveEnd += AbilityEffect;
-        } else {
-            SetAbilityCooldown();
-            AbilityEffect();
-        }
+        SetAbilityCooldown();
+        AbilityEffect();
     }
 
     protected void SetAbilityCooldown() {
@@ -150,10 +132,7 @@ abstract public class AbilityBase : MonoBehaviour {
         }
     }
 
-    protected virtual void AbilityEffect() {
-        pathfinder.OnDeadzoneMoveEnd -= AbilityEffect;
-        pathfinder.OnDeadzoneMoveEnd -= SetAbilityCooldown;
-    }
+    protected virtual void AbilityEffect() { }
 
     protected void OnImpact(GameObject pGameObject) {
         OnAbilityImpact?.Invoke(pGameObject);
@@ -161,7 +140,7 @@ abstract public class AbilityBase : MonoBehaviour {
     #endregion
 
     #region Raycast For Target
-    protected Vector3 RaycastForTarget() {
+    protected Vector3 RaycastForTarget(bool pSetTransformForward = false) {
         Vector3 targetLocation = Vector3.zero;
         RaycastHit hit;
 
@@ -175,9 +154,17 @@ abstract public class AbilityBase : MonoBehaviour {
     }
 
     protected Vector3 GetTargetClickLocation() {
-        Vector3 vec = playerController.ReturnTargetClickLocation();
-        transform.forward = (vec - transform.position).normalized;
-        return vec;
+        Vector3 pos = transform.position;
+
+        Vector3 targetPos = RaycastForTarget();
+
+        Vector3 distanceVector = (targetPos - pos);
+        float distance = distanceVector.magnitude;
+
+        if (distance > abilityRange[level])
+            targetPos = pos + distanceVector.normalized * abilityRange[level];
+
+        return targetPos;
     }
     #endregion
 

@@ -23,7 +23,6 @@ public class ZoneReusableData : MonoBehaviour {
             Destroy(this.gameObject);
         } else {
             instance = this;
-            //Debug.Log(instance);
             DontDestroyOnLoad(this.gameObject);
         }
     }

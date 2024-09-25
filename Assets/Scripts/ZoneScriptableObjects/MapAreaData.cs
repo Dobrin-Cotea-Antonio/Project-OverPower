@@ -13,4 +13,7 @@ public class MapAreaData : ScriptableObject {
     public float captureDecayAutomatic;
     public float captureDecayUnderEnemy;
     public float captureRegainSpeed;
+
+    [Header("Gold Generation")]
+    public float goldPerSecond;
 }

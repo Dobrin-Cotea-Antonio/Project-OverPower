@@ -33,6 +33,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "MovePlayer",
+                    "type": "Value",
+                    "id": "b8f33ddb-52d3-4aed-93e3-4b3034382b24",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
                     "name": "Scroll",
                     "type": "Value",
                     "id": "a14685d7-195c-4159-8e97-702abe1b53d0",
@@ -186,7 +195,7 @@
                 {
                     "name": "",
                     "id": "6d5fcd28-559e-41fe-b6ee-0d6829615de2",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/1",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -197,7 +206,7 @@
                 {
                     "name": "",
                     "id": "73424602-e358-41f5-81e8-eb364dcad985",
-                    "path": "<Keyboard>/w",
+                    "path": "<Keyboard>/2",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -208,7 +217,7 @@
                 {
                     "name": "",
                     "id": "51fb6e49-5678-4317-a565-30e5c051cb2a",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/3",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -241,7 +250,7 @@
                 {
                     "name": "",
                     "id": "2ef1698c-246a-4a2d-a7a5-e423949c8299",
-                    "path": "<Keyboard>/r",
+                    "path": "<Keyboard>/4",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -259,6 +268,61 @@
                     "action": "PlayerLeftClick",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "2D Vector",
+                    "id": "450c0ae4-0b65-461d-8bf8-96614eab80d0",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MovePlayer",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "82b9edd7-12d9-426f-ab36-5f856a6f47c5",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MovePlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "05de91ae-45dd-46d1-a46e-33da038f9306",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MovePlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "b0098a9b-f672-48ab-83fc-320496e80ba8",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MovePlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "736491bd-f9a0-44b6-afe5-b9347ce39e09",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MovePlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         },

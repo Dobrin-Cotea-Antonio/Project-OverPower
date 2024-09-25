@@ -14,6 +14,9 @@ public class MapArea : MonoBehaviour {
 
     public System.Action<Team> OnZoneCapture;
     public System.Action<Team> OnZoneLost;
+
+    public System.Action<MapAreaData, Team, float> OnZoneUpdate;
+
     public System.Action<List<PlayerData>, Team, float, float> OnZoneValueChange;// ADD ALL THE INVOKES
 
     [Tooltip("Just for Debugging; Do not touch!")]
@@ -31,7 +34,7 @@ public class MapArea : MonoBehaviour {
 
     private Team ownerTeam = Team.Neutral;
 
-    private const float maxCaptureValue = 100f;
+    public const float maxCaptureValue = 100f;
 
     #region Unity Events
     private void Awake() {
@@ -57,6 +60,11 @@ public class MapArea : MonoBehaviour {
                 CaptureState();
                 break;
         }
+
+        if (ownerTeam == Team.Neutral)
+            return;
+
+        OnZoneUpdate?.Invoke(mapAreaData, ownerTeam, teamCaptureProgress[ownerTeam]);
     }
 
     private void OnEnable() {
@@ -172,8 +180,6 @@ public class MapArea : MonoBehaviour {
 
             teamCaptureProgress[key] = Mathf.Clamp(teamCaptureProgress[key] - mapAreaData.captureDecayUnderEnemy * Time.deltaTime, 0, maxCaptureValue);
 
-            //Debug.Log()
-
             OnZoneValueChange?.Invoke(mapAreaCollider.playersInsideArea, key, teamCaptureProgress[key], maxCaptureValue);
 
             if (key != ownerTeam)
@@ -181,8 +187,6 @@ public class MapArea : MonoBehaviour {
 
             if (teamCaptureProgress[ownerTeam] != 0)
                 continue;
-
-            Debug.Log("GG");
 
             state = State.Neutral;
             ownerTeam = Team.Neutral;

@@ -87,11 +87,11 @@ public class AbilityManager : MonoBehaviour {
     #endregion
 
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.Alpha6))
             abilities[0].LevelUp();
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.Alpha7))
             abilities[1].LevelUp();
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.Alpha8))
             abilities[2].LevelUp();
     }
 }
