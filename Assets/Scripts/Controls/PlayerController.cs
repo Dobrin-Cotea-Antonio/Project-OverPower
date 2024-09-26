@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(IPathFinder))]
 public class PlayerController : MonoBehaviour {
 
     [SerializeField] private LayerMask targetLayerMask;

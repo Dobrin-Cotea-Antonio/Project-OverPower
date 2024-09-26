@@ -37,7 +37,7 @@ public class PhoenixAbility : AbilityBase {
         Vector3 moveDirection = (targetLocation - transform.position).normalized*aoeSegmentSize.y;
         moveDirection.y = 0;
 
-        float delayPerSegment = abilityDuration[level] / segmentCount;
+        float delayPerSegment = abilityData.abilityDuration / segmentCount;
         Vector3 segmentForward = (targetLocation - transform.position).normalized;
 
         canUpdateSegments = true;

@@ -3,18 +3,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class AbilityManager : MonoBehaviour {
-    public Action<float, float,float,float,int,int, int> OnAbilityCooldownDecrease;
-    public Action<float, float, int> OnAbilityUseTimeChange;
-    public Action<int, int, int> OnAbilityLevelUp;
-    public Action<int, int, int> OnChargeChange;
+[System.Serializable]
+public class AbilityUpgradeData {
+    public AbilityBase baseAbility;
+    public AbilityBase evolutionAbility;
+    public int evolutionCost;
+}
 
-    [SerializeField] PlayerData data;
-    [SerializeField] List<AbilityBase> abilities;
+[RequireComponent(typeof(PlayerData))]
+public class AbilityManager : MonoBehaviour {
+    public Action<float, float, float, float, int, int, int> OnAbilityCooldownDecrease;
+    public Action<float, float, int> OnAbilityUseTimeChange;
+    //public Action<int, int, int> OnAbilityLevelUp;
+    public Action<int, int, int> OnChargeChange;
+    public Action<int, AbilityBase> OnAbilityEvolve;
+
+    [SerializeField] private List<AbilityUpgradeData> abilityUpgradeData;
+
+    private List<AbilityBase> activeAbilities = new List<AbilityBase>();
+    private PlayerData playerData;
 
     #region Events
+    private void Awake() {
+        playerData = GetComponent<PlayerData>();
+
+        foreach (AbilityUpgradeData data in abilityUpgradeData)
+            activeAbilities.Add(data.baseAbility);
+    }
+
     void OnEnable() {
-        foreach (AbilityBase ability in abilities) {
+        foreach (AbilityBase ability in activeAbilities) {
             ability.OnCooldownChange += AbilityCooldownDecrease;
             ability.OnUseTimeChange += AbilityUseTimeDecrease;
             ability.OnAbilityLevelUp += AbilityLevelUp;
@@ -23,7 +41,7 @@ public class AbilityManager : MonoBehaviour {
     }
 
     void OnDisable() {
-        foreach (AbilityBase ability in abilities) {
+        foreach (AbilityBase ability in activeAbilities) {
             ability.OnCooldownChange -= AbilityCooldownDecrease;
             ability.OnUseTimeChange -= AbilityUseTimeDecrease;
             ability.OnAbilityLevelUp -= AbilityLevelUp;
@@ -33,65 +51,73 @@ public class AbilityManager : MonoBehaviour {
     #endregion
 
     #region Ability Events
-    void AbilityCooldownDecrease(float pCooldownLeft, float pAbilityCooldown,float pAbilityChargeCooldownLeft,float pAbiliyChargeCooldownMax,int pCharges,int pMaxCharges, AbilityBase pAbility) {
-        OnAbilityCooldownDecrease?.Invoke(pCooldownLeft, pAbilityCooldown,pAbilityChargeCooldownLeft,pAbiliyChargeCooldownMax,pCharges,pMaxCharges, abilities.IndexOf(pAbility));
+    void AbilityCooldownDecrease(float pCooldownLeft, float pAbilityCooldown, float pAbilityChargeCooldownLeft, float pAbiliyChargeCooldownMax, int pCharges, int pMaxCharges, AbilityBase pAbility) {
+        OnAbilityCooldownDecrease?.Invoke(pCooldownLeft, pAbilityCooldown, pAbilityChargeCooldownLeft, pAbiliyChargeCooldownMax, pCharges, pMaxCharges, activeAbilities.IndexOf(pAbility));
     }
 
     void AbilityUseTimeDecrease(float pUseTimeLeft, float pAbilityDuration, AbilityBase pAbility) {
-        OnAbilityUseTimeChange?.Invoke(pUseTimeLeft, pAbilityDuration, abilities.IndexOf(pAbility));
+        OnAbilityUseTimeChange?.Invoke(pUseTimeLeft, pAbilityDuration, activeAbilities.IndexOf(pAbility));
     }
 
     void AbilityLevelUp(AbilityBase pAbility, int pLevel, int pMaxLevel) {
-        OnAbilityLevelUp?.Invoke(pLevel, pMaxLevel, abilities.IndexOf(pAbility));
+        //OnAbilityLevelUp?.Invoke(pLevel, pMaxLevel, activeAbilities.IndexOf(pAbility));
     }
 
     void ChargeChange(int pCharges, int pMaxCharges, AbilityBase pAbility) {
-        OnChargeChange?.Invoke(pCharges, pMaxCharges, abilities.IndexOf(pAbility));
+        OnChargeChange?.Invoke(pCharges, pMaxCharges, activeAbilities.IndexOf(pAbility));
     }
     #endregion
 
     #region InputEvents
     public void OnAbility1Press() {
-        if (data.isStunned)
+        if (playerData.isStunned)
             return;
-        abilities[0].UseAbility();
+        activeAbilities[0].UseAbility();
     }
 
     public void OnAbility2Press() {
-        if (data.isStunned)
+        if (playerData.isStunned)
             return;
-        abilities[1].UseAbility();
+        activeAbilities[1].UseAbility();
     }
 
     public void OnAbility3Press() {
-        if (data.isStunned)
+        if (playerData.isStunned)
             return;
-        abilities[2].UseAbility();
+        activeAbilities[2].UseAbility();
     }
 
     public void OnAbility4Press() {
-        if (data.isStunned)
+        if (playerData.isStunned)
             return;
-        abilities[3].UseAbility();
+        activeAbilities[3].UseAbility();
     }
     #endregion
 
     #region Helper Methods
     public AbilityBase ReturnAbilityByIndex(int pIndex) {
-        return abilities[pIndex];
+        return activeAbilities[pIndex];
     }
 
     public Sprite ReturnAbilityIconByIndex(int pIndex) {
-        return abilities[pIndex].iconImage;
+        return activeAbilities[pIndex].abilityData.iconImage;
     }
     #endregion
 
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-            abilities[0].LevelUp();
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-            abilities[1].LevelUp();
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-            abilities[2].LevelUp();
     }
+
+    #region AbilityEvolution
+    public void EvolveAbility(int pAbilityIndex) {
+
+        if (playerData.gold < abilityUpgradeData[pAbilityIndex].evolutionCost)
+            return;
+
+        playerData.ModifyGold(-abilityUpgradeData[pAbilityIndex].evolutionCost);
+
+        activeAbilities[pAbilityIndex] = abilityUpgradeData[pAbilityIndex].evolutionAbility;
+
+        OnAbilityEvolve?.Invoke(pAbilityIndex, activeAbilities[pAbilityIndex]);
+    }
+    #endregion
 }

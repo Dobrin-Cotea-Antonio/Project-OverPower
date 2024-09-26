@@ -12,6 +12,7 @@ public class AbilityUIData {
     public Button abilityButton;
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI chargeText;
+    public GameObject abilityEvolutionButton;
 }
 
 public class UIManager : MonoBehaviour {
@@ -48,11 +49,13 @@ public class UIManager : MonoBehaviour {
 
     #region Unity Events
     private void Awake() {
-        for (int i = 0; i < abilities.Count; i++)
-            abilities[i].abilityImage.sprite = abilityManager.ReturnAbilityIconByIndex(i);
+
     }
 
     private void Start() {
+        for (int i = 0; i < abilities.Count; i++)
+            abilities[i].abilityImage.sprite = abilityManager.ReturnAbilityIconByIndex(i);
+
         background.color = ZoneReusableData.instance.teamZoneColor[playerData.team];
 
         UpdateImageSize(teamCaptureBar[Team.Red], new Vector3(0, 1, 1));
@@ -76,7 +79,8 @@ public class UIManager : MonoBehaviour {
 
         abilityManager.OnAbilityCooldownDecrease += UpdateAbilityCooldownIcon;
         abilityManager.OnAbilityUseTimeChange += UpdateAbilityUseTime;
-        abilityManager.OnAbilityLevelUp += UpdateAbilityLevel;
+        abilityManager.OnAbilityEvolve += AbilityEvolution;
+        //abilityManager.OnAbilityLevelUp += UpdateAbilityLevel;
         abilityManager.OnChargeChange += UpdateAbilityCharges;
 
         foreach (MapArea area in mapAreas)
@@ -97,7 +101,9 @@ public class UIManager : MonoBehaviour {
 
         abilityManager.OnAbilityCooldownDecrease -= UpdateAbilityCooldownIcon;
         abilityManager.OnAbilityUseTimeChange -= UpdateAbilityUseTime;
-        abilityManager.OnAbilityLevelUp -= UpdateAbilityLevel;
+        abilityManager.OnAbilityEvolve -= AbilityEvolution;
+
+        //abilityManager.OnAbilityLevelUp -= UpdateAbilityLevel;
         abilityManager.OnChargeChange -= UpdateAbilityCharges;
 
         foreach (MapArea area in mapAreas)
@@ -165,6 +171,11 @@ public class UIManager : MonoBehaviour {
             abilities[pAbilityIndex].chargeText.text = "";
         else
             abilities[pAbilityIndex].chargeText.text = (pCharges.ToString());
+    }
+
+    private void AbilityEvolution(int pAbilityIndex, AbilityBase pAbility) {
+        abilities[pAbilityIndex].abilityImage.sprite = pAbility.abilityData.iconImage;
+        abilities[pAbilityIndex].abilityButton.enabled = false;
     }
     #endregion
 

@@ -15,9 +15,9 @@ TagManager:
   - Walkable
   - Player
   - Obstacles
-  - 
-  - 
-  - 
+  - RedTeam
+  - GreenTeam
+  - BlueTeam
   - 
   - 
   - 

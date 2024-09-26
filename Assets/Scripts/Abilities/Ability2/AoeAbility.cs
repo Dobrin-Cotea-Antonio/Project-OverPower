@@ -4,42 +4,35 @@ using UnityEngine;
 
 public class AoeAbility : AbilityBase {
     [Header("AOE Data")]
-    [SerializeField] GameObject aoePrefab;
-    [SerializeField] PlayerData owner;
-    [SerializeField] float damage;
-    [SerializeField] Vector2 aoeSize;
+    [SerializeField] protected GameObject aoePrefab;
+    [Tooltip("If ticked, the ability will spawn on top of the player ignoring range, otherwise will spawn towards the curson")]
+    [SerializeField] protected bool spawnsOnPlayer;
 
-    [Header("Upgrade")]
-    [SerializeField] GameObject aoeOvertimePrefab;
-    [SerializeField] float overtimeDamage;
-    [SerializeField] float overtimeDuration;
+    PlayerData playerData;
+
+    #region Unity Events
+    protected override void Start() {
+        base.Start();
+
+        playerData = GetComponent<PlayerData>();
+    }
+    #endregion
 
     #region Ability
     protected override void AbilityEffect() {
         base.AbilityEffect();
-        Vector3 targetLocation = GetTargetClickLocation();
 
-        GameObject g = Instantiate(aoePrefab, targetLocation, Quaternion.identity);
-        AoeTimed aoe = g.GetComponent<AoeTimed>();
-        aoe.SetDamage(damage);
-        aoe.SetDelay(abilityDuration[level]);
-        aoe.SetOwner(owner);
-        aoe.SetSize(aoeSize);
-        aoe.OnImpact += OnImpact;
+        GameObject g;
 
-        if (level >= 1) {
-            aoe.OnDestroy += SpawnOvertimeAoe;
+        if (spawnsOnPlayer) {
+            g = Instantiate(aoePrefab, transform.position, Quaternion.identity);
+        } else {
+            Vector3 targetLocation = GetTargetClickLocation();
+            g = Instantiate(aoePrefab, targetLocation, Quaternion.identity);
         }
-    }
 
-    private void SpawnOvertimeAoe(GameObject pGameObject) {
-        GameObject g = Instantiate(aoeOvertimePrefab, pGameObject.transform.position, Quaternion.identity);
-        AoeOverTime aoeOverTime = g.GetComponent<AoeOverTime>();
-        aoeOverTime.SetDamage(overtimeDamage);
-        aoeOverTime.SetDuration(overtimeDuration);
-        aoeOverTime.SetOwner(owner);
-        aoeOverTime.SetSize(aoeSize);
+        AOE aoe = g.GetComponent<AOE>();
+        aoe.SetTeam(playerData.team);
     }
-
     #endregion
 }

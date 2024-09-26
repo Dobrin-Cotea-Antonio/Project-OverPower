@@ -21,12 +21,12 @@ public class WallAbility : AbilityBase {
 
         wall.OnImpact += OnImpact;
 
-        if (level == 0)
-            wall.OnImpact += ApplySlow;
-        else
-            wall.OnImpact += ApplyStun;
+        //if (level == 0)
+        //    wall.OnImpact += ApplySlow;
+        //else
+        //    wall.OnImpact += ApplyStun;
 
-        Destroy(g, abilityDuration[level]);
+        Destroy(g, abilityData.abilityDuration);
     }
 
     private void ApplySlow(GameObject pGameObject) {

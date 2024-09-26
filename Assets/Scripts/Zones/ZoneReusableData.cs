@@ -16,6 +16,7 @@ public class ZoneReusableData : MonoBehaviour {
 
     public SerializedDictionary<Team, Material> teamZoneMaterial = new SerializedDictionary<Team, Material>();
     public SerializedDictionary<Team, Color> teamZoneColor = new SerializedDictionary<Team, Color>();
+    public SerializedDictionary<Team, string> teamLayerName = new SerializedDictionary<Team, string>();
 
     #region Unity Events
     private void Awake() {

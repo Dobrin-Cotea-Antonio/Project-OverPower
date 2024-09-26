@@ -9,9 +9,11 @@ public class AoeCollision : MonoBehaviour {
 
     Vector3 initialScale;
 
+    #region Unity Events
     private void Awake() {
         initialScale = transform.localScale;
     }
+    #endregion
 
     #region Trigger Events
     private void OnTriggerEnter(Collider other) {

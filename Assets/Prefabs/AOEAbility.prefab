@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e15d8d24f25fcaf49a878a135072f76e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aoe: {fileID: 1604732328132170439}
+  aoeData: {fileID: 0}
+  aoeCollision: {fileID: 0}
 --- !u!1 &5551496193253672390
 GameObject:
   m_ObjectHideFlags: 0

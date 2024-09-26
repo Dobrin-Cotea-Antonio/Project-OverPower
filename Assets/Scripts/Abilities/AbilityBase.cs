@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-[RequireComponent(typeof(PlayerData))]
+[RequireComponent(typeof(PlayerData), typeof(PlayerController))]
 abstract public class AbilityBase : MonoBehaviour {
     //cooldown,maxcooldown,charge cooldown left,max charge cooldown,charges,maxCharges,current ability
     public Action<float, float, float, float, int, int, AbilityBase> OnCooldownChange;//updating ui and maybe more in the future (displays the cooldown of the ability)
@@ -12,44 +12,34 @@ abstract public class AbilityBase : MonoBehaviour {
     public Action<AbilityBase, int, int> OnAbilityLevelUp;//used for communicating with the ui once the ability is upgraded
     public Action<GameObject> OnAbilityImpact;
 
-    [Header("Ability Data")]
-    [SerializeField] protected Sprite _iconImage;
-    [SerializeField] protected float[] abilityCooldown;
-    [SerializeField] protected float[] abilityDuration;
-    [SerializeField] protected float[] abilityRange;
-    [SerializeField] protected string[] description;
-
-    [Header("Charges")]
-    [SerializeField] protected int[] maxCharges;
-    [SerializeField] protected float[] chargeCooldown;
-
-    [Header("Additional Info")]
-    [SerializeField] protected int maxLevel;
+    [Header("Data")]
+    [SerializeField] protected AbilityData _abilityData;
 
     [Header("Ability Raycasting Data")]
     [SerializeField] protected Camera playerCamera;
     [SerializeField] protected LayerMask targetLayerMask;
 
-    public int level { get; protected set; }
     public int charges { get; protected set; }
     public float cooldownLeft { get; protected set; }
     public float useTimeLeft { get; protected set; }
     public float chargeCooldownLeft { get; protected set; }
-    public Sprite iconImage { get { return _iconImage; } }
+    public AbilityData abilityData { get { return _abilityData; } }
 
     protected PlayerController playerController;
 
+    #region Unity Events
     protected virtual void Awake() {
-        level = 0;
-        charges = maxCharges[level];
         playerController = GetComponent<PlayerController>();
     }
+
+    protected virtual void Start() { }
 
     protected virtual void Update() {
         DecreaseChargeCooldownLeft();
         DecreaseCooldown();
         DecreaseUseTimeLeft();
     }
+    #endregion
 
     #region Cooldown
     protected void DecreaseCooldown() {
@@ -59,18 +49,18 @@ abstract public class AbilityBase : MonoBehaviour {
         cooldownLeft = Mathf.Max(cooldownLeft - Time.deltaTime, 0);
 
         if (cooldownLeft == 0) {
-            if (charges <= maxCharges[level]) {
+            if (charges <= abilityData.maxCharges) {
                 charges++;
 
-                if (charges != maxCharges[level]) {
-                    cooldownLeft = abilityCooldown[level];
+                if (charges != abilityData.maxCharges) {
+                    cooldownLeft = abilityData.abilityCooldown;
                 }
 
-                OnChargeChange?.Invoke(charges, maxCharges[level], this);
+                OnChargeChange?.Invoke(charges, abilityData.maxCharges, this);
             }
         }
 
-        OnCooldownChange?.Invoke(cooldownLeft, abilityCooldown[level], chargeCooldownLeft, chargeCooldown[level], charges, maxCharges[level], this);
+        OnCooldownChange?.Invoke(cooldownLeft, abilityData.abilityCooldown, chargeCooldownLeft, abilityData.chargeCooldown, charges, abilityData.maxCharges, this);
     }
 
     protected void DecreaseUseTimeLeft() {
@@ -78,17 +68,17 @@ abstract public class AbilityBase : MonoBehaviour {
             return;
 
         useTimeLeft = Mathf.Max(useTimeLeft - Time.deltaTime, 0);
-        OnUseTimeChange?.Invoke(useTimeLeft, abilityDuration[level], this);
+        OnUseTimeChange?.Invoke(useTimeLeft, abilityData.abilityDuration, this);
 
         if (useTimeLeft == 0) {
-            cooldownLeft = abilityCooldown[level] - abilityDuration[level];
-            if (maxCharges[level] != 1)
-                chargeCooldownLeft = chargeCooldown[level] - abilityDuration[level];
+            cooldownLeft = abilityData.abilityCooldown - abilityData.abilityDuration;
+            if (abilityData.maxCharges != 1)
+                chargeCooldownLeft = abilityData.chargeCooldown - abilityData.abilityDuration;
         }
     }
 
     protected void DecreaseChargeCooldownLeft() {
-        if (chargeCooldownLeft == 0 || maxCharges[level] == 1 || charges == maxCharges[level])
+        if (chargeCooldownLeft == 0 || abilityData.maxCharges == 1 || charges == abilityData.maxCharges)
             return;
 
         chargeCooldownLeft = Mathf.Max(chargeCooldownLeft - Time.deltaTime, 0);
@@ -98,7 +88,7 @@ abstract public class AbilityBase : MonoBehaviour {
     #region Ability
     public void UseAbility() {
 
-        if (maxCharges[level] == 1) {
+        if (abilityData.maxCharges == 1) {
             if (useTimeLeft != 0 || cooldownLeft != 0)
                 return;
         } else {
@@ -111,24 +101,23 @@ abstract public class AbilityBase : MonoBehaviour {
     }
 
     protected void SetAbilityCooldown() {
-        if (maxCharges[level] != 1) {
+        if (abilityData.maxCharges != 1) {
             charges = Mathf.Max(charges - 1, 0);
-            OnChargeChange?.Invoke(charges, maxCharges[level], this);
+            OnChargeChange?.Invoke(charges, abilityData.maxCharges, this);
 
-            if (charges != 0) {
-                cooldownLeft = abilityCooldown[level];
-            }
+            if (charges != 0)
+                cooldownLeft = abilityData.abilityCooldown;
 
-            chargeCooldownLeft = chargeCooldown[level];
+            chargeCooldownLeft = abilityData.chargeCooldown;
             return;
         }
 
-        if (abilityDuration[level] == 0) {
-            cooldownLeft = abilityCooldown[level];
-            if (maxCharges[level] != 1)
-                chargeCooldownLeft = chargeCooldown[level];
+        if (abilityData.abilityDuration == 0) {
+            cooldownLeft = abilityData.abilityCooldown;
+            if (abilityData.maxCharges != 1)
+                chargeCooldownLeft = abilityData.chargeCooldown;
         } else {
-            useTimeLeft = abilityDuration[level];
+            useTimeLeft = abilityData.abilityDuration;
         }
     }
 
@@ -145,9 +134,8 @@ abstract public class AbilityBase : MonoBehaviour {
         RaycastHit hit;
 
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, targetLayerMask)) {
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, targetLayerMask)) 
             targetLocation = hit.point;
-        }
 
         transform.forward = (targetLocation - transform.position).normalized;
         return targetLocation;
@@ -161,30 +149,10 @@ abstract public class AbilityBase : MonoBehaviour {
         Vector3 distanceVector = (targetPos - pos);
         float distance = distanceVector.magnitude;
 
-        if (distance > abilityRange[level])
-            targetPos = pos + distanceVector.normalized * abilityRange[level];
+        if (distance > abilityData.abilityRange)
+            targetPos = pos + distanceVector.normalized * abilityData.abilityRange;
 
         return targetPos;
-    }
-    #endregion
-
-    #region Level
-    public void LevelUp() {
-        int lastLevel = level;
-
-        level = Mathf.Min(level + 1, maxLevel - 1);
-
-        Debug.Log("test");
-
-        if (level == lastLevel)
-            return;
-
-        if (charges != maxCharges[level]) {
-            cooldownLeft = abilityCooldown[level];
-        }
-
-        OnAbilityLevelUp?.Invoke(this, level, maxLevel);
-        OnChargeChange?.Invoke(charges, maxCharges[level], this);
     }
     #endregion
 }

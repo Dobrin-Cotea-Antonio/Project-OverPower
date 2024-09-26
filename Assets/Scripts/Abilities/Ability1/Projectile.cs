@@ -3,95 +3,67 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class Projectile : MonoBehaviour {
-    public Action<GameObject> OnImpact;
+public class Projectile : DamageDealerBase {
 
-    [SerializeField] GameObject explosionPrefab;
+    [Header("Stats")]
+    [SerializeField] protected ProjectileData projectileData;
 
-    Collider ownerCollider;
-    float speed;
-    Vector2 explosionSize;
-    float range;
-    float damage;
-    float extraDamageToBurningTargets;
-    PlayerData owner;
+    protected Vector3 initialPosition;
 
-    Rigidbody rb;
-    Collider col;
-    Vector3 initialPosition;
-
-    private void Awake() {
-        rb = GetComponent<Rigidbody>();
-        col = GetComponent<Collider>();
-        col.enabled = false;
+    #region Unity Events 
+    protected override void Awake() {
+        base.Awake();
         initialPosition = transform.position;
     }
+    #endregion
 
     #region Updates
-    private void Update() {
-        if ((initialPosition - transform.position).magnitude > range) {
+    protected virtual void Update() {
+        CheckRange();
+    }
+    #endregion
+
+    #region Helper Methods
+    private void CheckRange() {
+        if ((initialPosition - transform.position).magnitude > projectileData.range)
             Destroy(gameObject);
+    }
+
+    public override void SetTeam(Team pTeam) {
+        base.SetTeam(pTeam);
+
+        rb.AddForce(projectileData.speed * transform.forward, ForceMode.VelocityChange);
+        col.enabled = true;
+    }
+
+    protected virtual void ApplyStatusEffects(PlayerData pPlayerData) {
+        foreach (GameObject statusEffects in projectileData.statusEffectsOnHit)
+            pPlayerData.ApplyStatusEffect(statusEffects);
+    }
+
+    protected virtual void ApplyAdditionalActions(Collision pCollision) {
+        foreach (GameObject action in projectileData.additionalActionsOnHit) {
+            GameObject g = Instantiate(action, pCollision.transform.position, Quaternion.identity);
+            //finish
         }
     }
     #endregion
 
-    #region Setter Methods
-    public void SetSpeed(float pSpeed,Vector3 pForward) {
-        speed = pSpeed;
-        transform.forward = pForward;
-        rb.velocity = Vector3.zero;
-        rb.AddForce(speed * transform.forward, ForceMode.VelocityChange);
-        
-    }
+    #region Collision
+    private void OnCollisionEnter(Collision pCollision) {
 
-    public void SetExplosionSize(Vector2 pSize) {
-        explosionSize = pSize;
-    }
+        PlayerData playerData = pCollision.gameObject.GetComponent<PlayerData>();
 
-    public void SetRange(float pRange) {
-        range = pRange;
-    }
-
-    public void SetOwnerCollider(Collider pCol) {
-        ownerCollider = pCol;
-        Physics.IgnoreCollision(ownerCollider, GetComponent<Collider>());
-        col.enabled = true;
-        owner = ownerCollider.GetComponent<PlayerData>();
-    }
-
-    public void SetDamage(float pDamage) {
-        damage = pDamage;
-    }
-
-    public void SetExtraDamageFromBurning(float pDamage) {
-        extraDamageToBurningTargets = pDamage;
-    }
-    #endregion
-
-    #region
-    void OnProjectileImpact(GameObject pGameObject) {
-        PlayerData data = pGameObject.GetComponent<PlayerData>();
-        if (data == null)
+        if (playerData == null)
             return;
 
-        if (data.CheckStackCountOfEffectType<BurnEffect>()<=1)
-            return;
+        playerData.TakeDamage(projectileData.damage);
+        OnDamageDealt?.Invoke(playerData, projectileData.damage);
 
-        data.TakeDamage(extraDamageToBurningTargets);
-    }
-    #endregion
-
-    private void OnCollisionEnter(Collision collision) {
-        GameObject g = Instantiate(explosionPrefab, collision.transform.position, Quaternion.identity);
-        AoeTimed aoe = g.GetComponent<AoeTimed>();
-        aoe.SetDamage(damage);
-        aoe.SetDelay(0.05f);
-        aoe.SetOwner(owner);
-        aoe.SetSize(explosionSize);
-        aoe.OnImpact += OnImpact;
-        aoe.OnImpact += OnProjectileImpact;
+        ApplyStatusEffects(playerData);
+        ApplyAdditionalActions(pCollision);
 
         Destroy(gameObject);
     }
-
+    #endregion
 }

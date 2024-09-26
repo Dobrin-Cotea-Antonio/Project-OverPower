@@ -58,6 +58,9 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
         OnHpRegenChange?.Invoke(hpRegen);
         OnManaRegenChange?.Invoke(manaRegen);
         OnGoldChange?.Invoke(gold);
+
+        if (team != Team.Neutral)
+            gameObject.layer = LayerMask.NameToLayer(ZoneReusableData.instance.teamLayerName[team]);
     }
 
     private void Update() {
@@ -178,7 +181,7 @@ public class PlayerData : MonoBehaviour, IDamagable, IStatusEffectReceiver {
     #endregion
 
     #region Gold
-    public void AddGold(float pAmount) {
+    public void ModifyGold(float pAmount) {
         gold = Mathf.Max(gold + pAmount, 0);
         OnGoldChange?.Invoke(gold);
     }

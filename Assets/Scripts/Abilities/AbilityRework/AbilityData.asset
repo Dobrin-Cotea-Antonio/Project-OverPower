@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb9a18dd2c3c32a478dc3f7f5610e2ce, type: 3}
+  m_Name: AbilityData
+  m_EditorClassIdentifier: 
+  iconImage: {fileID: 21300000, guid: f3dac46d95b6ab24095eee086eb64304, type: 3}
+  abilityCooldown: 5
+  abilityDuration: 0
+  abilityRange: 10
+  description: 
+  maxCharges: 1
+  chargeCooldown: 0

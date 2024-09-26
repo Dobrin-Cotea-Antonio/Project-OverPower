@@ -28,7 +28,7 @@ public class PlayerManager : MonoBehaviour {
 
         foreach (KeyValuePair<Team, List<PlayerData>> pair in playerDictionary)
             foreach (PlayerData data in pair.Value)
-                data.AddGold(pData.goldPerSecond * Time.deltaTime);
+                data.ModifyGold(pData.goldPerSecond * Time.deltaTime);
     }
     #endregion
 

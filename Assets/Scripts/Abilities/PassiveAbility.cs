@@ -5,7 +5,8 @@ using UnityEngine;
 public class PassiveAbility : AbilityBase {
     [SerializeField] GameObject burnEffectPrefab;
 
-    private void Start() {
+    protected override void Start() {
+        base.Start();
         UseAbility();
     }
 
